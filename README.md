@@ -6,10 +6,10 @@ _don't just copy and paste the code from here try to learn from it, it will be m
 
 ### [Checkout the full tutorial here](https://youtu.be/SsKNRwYPlrw)
 
-⚠️ Important :
+## ⚠️ Important :
 
 - Updated the code swap the functions firebase storage with cloudinary for image storage in `ecommerce_admin_app`.
-- ### Changes you need to do :
+- ## Changes you need to do :
 
   - add packages `http`,`flutter_dotenv` using
 
@@ -45,7 +45,7 @@ _don't just copy and paste the code from here try to learn from it, it will be m
   }
   ```
 
-  - copy the contents of `lib/controllers/cloudinary_service.dart`
+  - copy the contents of `lib/controllers/cloudinary_service.dart` from [here](https://github.com/Snehasis4321/ecommerce_app_flutter_firebase/blob/main/ecommerce_admin_app/lib/controllers/cloudinary_service.dart)
 
   - modify the image upload function user this instead of the old one, for `ModifyCategory()` in `categories_page.dart`,`ModifyProduct()` in `modify_product.dart`,`ModifyPromo()` in `modify_promo.dart`
 
