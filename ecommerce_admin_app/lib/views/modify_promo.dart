@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:ecommerce_admin_app/controllers/cloudinary_service.dart';
 import 'package:ecommerce_admin_app/controllers/db_service.dart';
 import 'package:ecommerce_admin_app/controllers/storage_service.dart';
 import 'package:ecommerce_admin_app/models/products_model.dart';
@@ -26,16 +27,16 @@ class _ModifyPromoState extends State<ModifyPromo> {
   late XFile? image = null;
 
   bool _isInitialized = false;
-bool _isPromo = true;
+  bool _isPromo = true;
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!_isInitialized) {
         final arguments = ModalRoute.of(context)?.settings.arguments;
-        if (arguments != null && arguments is Map<String,dynamic>) {
-          if( arguments["detail"] is PromoBannersModel){
-          setData(arguments["detail"] as PromoBannersModel);
+        if (arguments != null && arguments is Map<String, dynamic>) {
+          if (arguments["detail"] is PromoBannersModel) {
+            setData(arguments["detail"] as PromoBannersModel);
           }
           _isPromo = arguments['promo'] ?? true;
         }
@@ -44,11 +45,11 @@ bool _isPromo = true;
     });
   }
 
-  // function to pick image using image picker
-  Future<void> pickImage() async {
+  // NEW : upload to cloudinary
+  void _pickImageAndCloudinaryUpload() async {
     image = await picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
-      String? res = await  StorageService().uploadImage(image!.path,context);
+      String? res = await uploadToCloudinary(image);
       setState(() {
         if (res != null) {
           imageController.text = res;
@@ -60,22 +61,43 @@ bool _isPromo = true;
     }
   }
 
+  // OLD : upload to firebase
+  // function to pick image using image picker
+  // Future<void> pickImage() async {
+  //   image = await picker.pickImage(source: ImageSource.gallery);
+  //   if (image != null) {
+  //     String? res = await  StorageService().uploadImage(image!.path,context);
+  //     setState(() {
+  //       if (res != null) {
+  //         imageController.text = res;
+  //         print("set image url ${res} : ${imageController.text}");
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //             const SnackBar(content: Text("Image uploaded successfully")));
+  //       }
+  //     });
+  //   }
+  // }
+
   // set the data from arguments
-  setData(PromoBannersModel data){
-    productId=data.id;
-    titleController.text=data.title;
-    categoryController.text= data.category;
-    imageController.text= data.image;
-    setState(() {
-      
-    });
+  setData(PromoBannersModel data) {
+    productId = data.id;
+    titleController.text = data.title;
+    categoryController.text = data.category;
+    imageController.text = data.image;
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(productId.isNotEmpty? _isPromo? "Update Promo":"Update Banner" : _isPromo? "Add Promo":"Add Banner" ),
+        title: Text(productId.isNotEmpty
+            ? _isPromo
+                ? "Update Promo"
+                : "Update Banner"
+            : _isPromo
+                ? "Add Promo"
+                : "Add Banner"),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -96,7 +118,6 @@ bool _isPromo = true;
                 SizedBox(
                   height: 10,
                 ),
-                
                 SizedBox(
                   height: 10,
                 ),
@@ -144,36 +165,42 @@ bool _isPromo = true;
                 SizedBox(
                   height: 10,
                 ),
-               
-                SizedBox(height: 10,),
+                SizedBox(
+                  height: 10,
+                ),
                 image == null
-                  ? imageController.text.isNotEmpty
-                      ? Container(
-                          margin: EdgeInsets.all(20),
-                          height: 100,
-                          width: double.infinity,
-                          color: Colors.deepPurple.shade50,
-                          child: Image.network(
-                            imageController.text,
-                            fit: BoxFit.contain,
-                          ))
-                      : SizedBox()
-                  : Container(
-                      margin: EdgeInsets.all(20),
-                      height: 200,
-                      width: double.infinity,
-                      color: Colors.deepPurple.shade50,
-                      child: Image.file(
-                        File(image!.path),
-                        fit: BoxFit.contain,
-                      )),
-                    ElevatedButton(
-                  onPressed: () {
-                    pickImage();
-                  },
-                  child: Text("Pick Image")),
-                  SizedBox(height: 10,),
-                 TextFormField(
+                    ? imageController.text.isNotEmpty
+                        ? Container(
+                            margin: EdgeInsets.all(20),
+                            height: 100,
+                            width: double.infinity,
+                            color: Colors.deepPurple.shade50,
+                            child: Image.network(
+                              imageController.text,
+                              fit: BoxFit.contain,
+                            ))
+                        : SizedBox()
+                    : Container(
+                        margin: EdgeInsets.all(20),
+                        height: 200,
+                        width: double.infinity,
+                        color: Colors.deepPurple.shade50,
+                        child: Image.file(
+                          File(image!.path),
+                          fit: BoxFit.contain,
+                        )),
+                ElevatedButton(
+                    onPressed: () {
+                      // OLD one for firebase storage upload
+                      // pickImage();
+                      // NEW for cloudinary Upload
+                      _pickImageAndCloudinaryUpload();
+                    },
+                    child: Text("Pick Image")),
+                SizedBox(
+                  height: 10,
+                ),
+                TextFormField(
                   controller: imageController,
                   validator: (v) => v!.isEmpty ? "This cant be empty." : null,
                   decoration: InputDecoration(
@@ -182,31 +209,45 @@ bool _isPromo = true;
                       fillColor: Colors.deepPurple.shade50,
                       filled: true),
                 ),
-                SizedBox(height: 10,),
                 SizedBox(
-                  height: 60,
-                  width:  double.infinity,
-                  child: ElevatedButton(onPressed: (){
-                    if(formKey.currentState!.validate()){
-                      Map<String, dynamic> data = {
-                  "title": titleController.text,
-                  "category": categoryController.text,
-                  "image": imageController.text
-                };
+                  height: 10,
+                ),
+                SizedBox(
+                    height: 60,
+                    width: double.infinity,
+                    child: ElevatedButton(
+                        onPressed: () {
+                          if (formKey.currentState!.validate()) {
+                            Map<String, dynamic> data = {
+                              "title": titleController.text,
+                              "category": categoryController.text,
+                              "image": imageController.text
+                            };
 
-                if(productId.isNotEmpty){
-                  DbService().updatePromos(id: productId, data: data,isPromo: _isPromo);
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${_isPromo?"Promo":"Banner"} Updated")));
-                }
-                else{
-                  DbService().createPromos( data: data, isPromo: _isPromo);
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("${_isPromo?"Promo":"Banner"} Added")));
-                }
-                    }
-                  }, child: Text(productId.isNotEmpty? _isPromo? "Update Promo":"Update Banner" : _isPromo? "Add Promo":"Add Banner" )))
-                
+                            if (productId.isNotEmpty) {
+                              DbService().updatePromos(
+                                  id: productId, data: data, isPromo: _isPromo);
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                  content: Text(
+                                      "${_isPromo ? "Promo" : "Banner"} Updated")));
+                            } else {
+                              DbService()
+                                  .createPromos(data: data, isPromo: _isPromo);
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                                  content: Text(
+                                      "${_isPromo ? "Promo" : "Banner"} Added")));
+                            }
+                          }
+                        },
+                        child: Text(productId.isNotEmpty
+                            ? _isPromo
+                                ? "Update Promo"
+                                : "Update Banner"
+                            : _isPromo
+                                ? "Add Promo"
+                                : "Add Banner")))
               ],
             ),
           ),

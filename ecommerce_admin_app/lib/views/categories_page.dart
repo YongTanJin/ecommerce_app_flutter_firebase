@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:ecommerce_admin_app/containers/additional_confirm.dart';
+import 'package:ecommerce_admin_app/controllers/cloudinary_service.dart';
 import 'package:ecommerce_admin_app/controllers/db_service.dart';
 import 'package:ecommerce_admin_app/controllers/storage_service.dart';
 import 'package:ecommerce_admin_app/models/categories_model.dart';
@@ -20,100 +21,140 @@ class _CategoriesPageState extends State<CategoriesPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Categories"),),
-      body:  Consumer<AdminProvider> (builder: (context, value, child) {
-        List<CategoriesModel> categories =
-            CategoriesModel.fromJsonList(value.categories)
-                ;
+      appBar: AppBar(
+        title: Text("Categories"),
+      ),
+      body: Consumer<AdminProvider>(
+        builder: (context, value, child) {
+          List<CategoriesModel> categories =
+              CategoriesModel.fromJsonList(value.categories);
 
-            if (value.categories.isEmpty) {
-          return Center(
-            child: Text("No Categories Found"),
-          );
-        }
-
-        return ListView.builder(
-          itemCount: value.categories.length,
-          itemBuilder: (context, index) {
-            return ListTile(
-              leading: Container(height: 50,width: 50,
-              child:  Image.network(categories[index].image==null||categories[index].image==""?
-              "https://demofree.sirv.com/nope-not-here.jpg": categories[index].image)
-              ),
-    onTap:  (){
-      showDialog(context: context, builder: (context)=>
-        AlertDialog(
-          title: Text("What you want to do"),
-          content: Text("Delete action cannot be undone"),
-          actions: [
-            TextButton(onPressed: (){
-              Navigator.pop(context);
-              showDialog(context: context, builder: (context)=>
-              AdditionalConfirm(contentText: "Are you sure you want to delete this", onYes: (){
-                DbService().deleteCategories(docId: categories[index].id);
-                Navigator.pop(context);
-              }, onNo: (){
-                Navigator.pop(context);
-              }));
-            }, child: Text("Delete Category")),
-            TextButton(onPressed: (){
-              Navigator.pop(context);
-              showDialog(context: context, builder: (context)=> ModifyCategory(isUpdating: true, categoryId: 
-       categories[index].id, priority: categories[index].priority,image: categories[index].image,
-       name:  categories[index].name,));
-            }, child: Text("Update Category"))
-          ],
-        )
-      );
-    },
-
-              title: Text(
-                categories[index].name,
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-              ),
-              subtitle: Text("Priority : ${categories[index].priority}"),
-              trailing:  IconButton(icon: Icon(Icons.edit_outlined), onPressed: (){
-  showDialog(context: context, builder: (context)=> ModifyCategory(isUpdating: true, categoryId: 
-       categories[index].id, priority: categories[index].priority,image: categories[index].image,
-       name:  categories[index].name,));
-
-              },),
+          if (value.categories.isEmpty) {
+            return Center(
+              child: Text("No Categories Found"),
             );
-          },
-        );
-        
-      },),
+          }
 
-      floatingActionButton:  FloatingActionButton(onPressed: (){
-        showDialog(context: context, builder: (context)=> ModifyCategory(isUpdating: false, categoryId: 
-        "", priority: 0,));
-      },
-      child:  Icon(Icons.add),),
+          return ListView.builder(
+            itemCount: value.categories.length,
+            itemBuilder: (context, index) {
+              return ListTile(
+                leading: Container(
+                    height: 50,
+                    width: 50,
+                    child: Image.network(categories[index].image == null ||
+                            categories[index].image == ""
+                        ? "https://demofree.sirv.com/nope-not-here.jpg"
+                        : categories[index].image)),
+                onTap: () {
+                  showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                            title: Text("What you want to do"),
+                            content: Text("Delete action cannot be undone"),
+                            actions: [
+                              TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                    showDialog(
+                                        context: context,
+                                        builder: (context) => AdditionalConfirm(
+                                            contentText:
+                                                "Are you sure you want to delete this",
+                                            onYes: () {
+                                              DbService().deleteCategories(
+                                                  docId: categories[index].id);
+                                              Navigator.pop(context);
+                                            },
+                                            onNo: () {
+                                              Navigator.pop(context);
+                                            }));
+                                  },
+                                  child: Text("Delete Category")),
+                              TextButton(
+                                  onPressed: () {
+                                    Navigator.pop(context);
+                                    showDialog(
+                                        context: context,
+                                        builder: (context) => ModifyCategory(
+                                              isUpdating: true,
+                                              categoryId: categories[index].id,
+                                              priority:
+                                                  categories[index].priority,
+                                              image: categories[index].image,
+                                              name: categories[index].name,
+                                            ));
+                                  },
+                                  child: Text("Update Category"))
+                            ],
+                          ));
+                },
+                title: Text(
+                  categories[index].name,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                subtitle: Text("Priority : ${categories[index].priority}"),
+                trailing: IconButton(
+                  icon: Icon(Icons.edit_outlined),
+                  onPressed: () {
+                    showDialog(
+                        context: context,
+                        builder: (context) => ModifyCategory(
+                              isUpdating: true,
+                              categoryId: categories[index].id,
+                              priority: categories[index].priority,
+                              image: categories[index].image,
+                              name: categories[index].name,
+                            ));
+                  },
+                ),
+              );
+            },
+          );
+        },
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () {
+          showDialog(
+              context: context,
+              builder: (context) => ModifyCategory(
+                    isUpdating: false,
+                    categoryId: "",
+                    priority: 0,
+                  ));
+        },
+        child: Icon(Icons.add),
+      ),
     );
   }
 }
 
 class ModifyCategory extends StatefulWidget {
-    final bool isUpdating;
+  final bool isUpdating;
   final String? name;
   final String categoryId;
   final String? image;
   final int priority;
-  const ModifyCategory({super.key, required this.isUpdating, this.name, required this.categoryId, this.image, required this.priority});
+  const ModifyCategory(
+      {super.key,
+      required this.isUpdating,
+      this.name,
+      required this.categoryId,
+      this.image,
+      required this.priority});
 
   @override
   State<ModifyCategory> createState() => _ModifyCategoryState();
 }
 
 class _ModifyCategoryState extends State<ModifyCategory> {
-    final formKey = GlobalKey<FormState>();
+  final formKey = GlobalKey<FormState>();
   final ImagePicker picker = ImagePicker();
   late XFile? image = null;
   TextEditingController categoryController = TextEditingController();
   TextEditingController imageController = TextEditingController();
   TextEditingController priorityController = TextEditingController();
-
 
   @override
   void initState() {
@@ -125,11 +166,11 @@ class _ModifyCategoryState extends State<ModifyCategory> {
     super.initState();
   }
 
-  // function to pick image using image picker
-  Future<void> pickImage() async {
+  // NEW : upload to cloudinary
+  void _pickImageAndCloudinaryUpload() async {
     image = await picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
-      String? res = await  StorageService().uploadImage(image!.path,context);
+      String? res = await uploadToCloudinary(image);
       setState(() {
         if (res != null) {
           imageController.text = res;
@@ -141,6 +182,22 @@ class _ModifyCategoryState extends State<ModifyCategory> {
     }
   }
 
+  // OLD : upload to firebase
+  // function to pick image using image picker
+  // Future<void> pickImage() async {
+  //   image = await picker.pickImage(source: ImageSource.gallery);
+  //   if (image != null) {
+  //     String? res = await StorageService().uploadImage(image!.path, context);
+  //     setState(() {
+  //       if (res != null) {
+  //         imageController.text = res;
+  //         print("set image url ${res} : ${imageController.text}");
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //             const SnackBar(content: Text("Image uploaded successfully")));
+  //       }
+  //     });
+  //   }
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -176,7 +233,7 @@ class _ModifyCategoryState extends State<ModifyCategory> {
               TextFormField(
                 controller: priorityController,
                 validator: (v) => v!.isEmpty ? "This cant be empty." : null,
-                keyboardType:  TextInputType.number,
+                keyboardType: TextInputType.number,
                 decoration: InputDecoration(
                     hintText: "Priority",
                     label: Text("Priority"),
@@ -186,7 +243,7 @@ class _ModifyCategoryState extends State<ModifyCategory> {
               SizedBox(
                 height: 10,
               ),
-             image == null
+              image == null
                   ? imageController.text.isNotEmpty
                       ? Container(
                           margin: EdgeInsets.all(20),
@@ -207,13 +264,17 @@ class _ModifyCategoryState extends State<ModifyCategory> {
                         File(image!.path),
                         fit: BoxFit.contain,
                       )),
-            
               ElevatedButton(
                   onPressed: () {
-                    pickImage();
+                    // OLD one for firebase storage upload
+                    // pickImage();
+                    // NEW for cloudinary Upload
+                    _pickImageAndCloudinaryUpload();
                   },
                   child: Text("Pick Image")),
-                  SizedBox(height: 10,),
+              SizedBox(
+                height: 10,
+              ),
               TextFormField(
                 controller: imageController,
                 validator: (v) => v!.isEmpty ? "This cant be empty." : null,
@@ -228,35 +289,38 @@ class _ModifyCategoryState extends State<ModifyCategory> {
         ),
       ),
       actions: [
-          TextButton(
+        TextButton(
             onPressed: () {
               Navigator.pop(context);
             },
             child: Text("Cancel")),
-          TextButton(
-            onPressed: () async{
-                if (formKey.currentState!.validate()) {
+        TextButton(
+            onPressed: () async {
+              if (formKey.currentState!.validate()) {
                 if (widget.isUpdating) {
-                await  DbService().updateCategories(
-                      docId: widget.categoryId,
-                      data: {"name": categoryController.text.toLowerCase(), 
-                      "image": imageController.text, "priority": int.parse(priorityController.text)});
-                   ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  await DbService()
+                      .updateCategories(docId: widget.categoryId, data: {
+                    "name": categoryController.text.toLowerCase(),
+                    "image": imageController.text,
+                    "priority": int.parse(priorityController.text)
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content: Text("Category Updated"),
                   ));
-                }
-                else{
-                  await  DbService().createCategories(
-                      data: {"name": categoryController.text.toLowerCase(), 
-                      "image": imageController.text, "priority": int.parse(priorityController.text)});
-                        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                } else {
+                  await DbService().createCategories(data: {
+                    "name": categoryController.text.toLowerCase(),
+                    "image": imageController.text,
+                    "priority": int.parse(priorityController.text)
+                  });
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
                     content: Text("Category Added"),
                   ));
                 }
                 Navigator.pop(context);
               }
             },
-            child: Text(widget.isUpdating?"Update": "Add")),
+            child: Text(widget.isUpdating ? "Update" : "Add")),
       ],
     );
   }

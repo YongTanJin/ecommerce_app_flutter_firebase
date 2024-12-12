@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:ecommerce_admin_app/controllers/cloudinary_service.dart';
 import 'package:ecommerce_admin_app/controllers/db_service.dart';
 import 'package:ecommerce_admin_app/controllers/storage_service.dart';
 import 'package:ecommerce_admin_app/models/products_model.dart';
@@ -28,11 +29,11 @@ class _ModifyProductState extends State<ModifyProduct> {
   final ImagePicker picker = ImagePicker();
   late XFile? image = null;
 
-  // function to pick image using image picker
-  Future<void> pickImage() async {
+// NEW : upload to cloudinary
+  void _pickImageAndCloudinaryUpload() async {
     image = await picker.pickImage(source: ImageSource.gallery);
     if (image != null) {
-      String? res = await  StorageService().uploadImage(image!.path,context);
+      String? res = await uploadToCloudinary(image);
       setState(() {
         if (res != null) {
           imageController.text = res;
@@ -44,30 +45,45 @@ class _ModifyProductState extends State<ModifyProduct> {
     }
   }
 
+// OLD : upload to firebase
+  // function to pick image using image picker
+  // Future<void> pickImage() async {
+  //   image = await picker.pickImage(source: ImageSource.gallery);
+  //   if (image != null) {
+  //     String? res = await StorageService().uploadImage(image!.path, context);
+  //     setState(() {
+  //       if (res != null) {
+  //         imageController.text = res;
+  //         print("set image url ${res} : ${imageController.text}");
+  //         ScaffoldMessenger.of(context).showSnackBar(
+  //             const SnackBar(content: Text("Image uploaded successfully")));
+  //       }
+  //     });
+  //   }
+  // }
+
   // set the data from arguments
-  setData(ProductsModel data){
-    productId=data.id;
-    nameController.text= data.name;
-    oldPriceController.text= data.old_price.toString();
-    newPriceController.text= data.new_price.toString();
-    quantityController.text=data.maxQuantity.toString();
-    categoryController.text= data.category;
-    descController.text= data.description;
-    imageController.text= data.image;
-    setState(() {
-      
-    });
+  setData(ProductsModel data) {
+    productId = data.id;
+    nameController.text = data.name;
+    oldPriceController.text = data.old_price.toString();
+    newPriceController.text = data.new_price.toString();
+    quantityController.text = data.maxQuantity.toString();
+    categoryController.text = data.category;
+    descController.text = data.description;
+    imageController.text = data.image;
+    setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    final arguments= ModalRoute.of(context)!.settings.arguments ;
-    if(arguments != null && arguments is ProductsModel){
+    final arguments = ModalRoute.of(context)!.settings.arguments;
+    if (arguments != null && arguments is ProductsModel) {
       setData(arguments);
     }
     return Scaffold(
       appBar: AppBar(
-        title: Text(productId.isNotEmpty? "Update Product": "Add Product"),
+        title: Text(productId.isNotEmpty ? "Update Product" : "Add Product"),
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -182,35 +198,43 @@ class _ModifyProductState extends State<ModifyProduct> {
                       filled: true),
                   maxLines: 8,
                 ),
-                SizedBox(height: 10,),
+                SizedBox(
+                  height: 10,
+                ),
                 image == null
-                  ? imageController.text.isNotEmpty
-                      ? Container(
-                          margin: EdgeInsets.all(20),
-                          height: 100,
-                          width: double.infinity,
-                          color: Colors.deepPurple.shade50,
-                          child: Image.network(
-                            imageController.text,
-                            fit: BoxFit.contain,
-                          ))
-                      : SizedBox()
-                  : Container(
-                      margin: EdgeInsets.all(20),
-                      height: 200,
-                      width: double.infinity,
-                      color: Colors.deepPurple.shade50,
-                      child: Image.file(
-                        File(image!.path),
-                        fit: BoxFit.contain,
-                      )),
-                    ElevatedButton(
-                  onPressed: () {
-                    pickImage();
-                  },
-                  child: Text("Pick Image")),
-                  SizedBox(height: 10,),
-                 TextFormField(
+                    ? imageController.text.isNotEmpty
+                        ? Container(
+                            margin: EdgeInsets.all(20),
+                            height: 100,
+                            width: double.infinity,
+                            color: Colors.deepPurple.shade50,
+                            child: Image.network(
+                              imageController.text,
+                              fit: BoxFit.contain,
+                            ))
+                        : SizedBox()
+                    : Container(
+                        margin: EdgeInsets.all(20),
+                        height: 200,
+                        width: double.infinity,
+                        color: Colors.deepPurple.shade50,
+                        child: Image.file(
+                          // File(image!.path),
+                          File(image!.path),
+                          fit: BoxFit.contain,
+                        )),
+                ElevatedButton(
+                    onPressed: () {
+                      // OLD one for firebase storage upload
+                      // pickImage();
+                      // NEW for cloudinary Upload
+                      _pickImageAndCloudinaryUpload();
+                    },
+                    child: Text("Pick Image")),
+                SizedBox(
+                  height: 10,
+                ),
+                TextFormField(
                   controller: imageController,
                   validator: (v) => v!.isEmpty ? "This cant be empty." : null,
                   decoration: InputDecoration(
@@ -219,35 +243,42 @@ class _ModifyProductState extends State<ModifyProduct> {
                       fillColor: Colors.deepPurple.shade50,
                       filled: true),
                 ),
-                SizedBox(height: 10,),
                 SizedBox(
-                  height: 60,
-                  width:  double.infinity,
-                  child: ElevatedButton(onPressed: (){
-                    if(formKey.currentState!.validate()){
-                      Map<String, dynamic> data = {
-                  "name": nameController.text,
-                  "old_price": int.parse(oldPriceController.text),
-                  "new_price": int.parse(newPriceController.text),
-                  "quantity": int.parse(quantityController.text),
-                  "category": categoryController.text,
-                  "desc": descController.text,
-                  "image": imageController.text
-                };
+                  height: 10,
+                ),
+                SizedBox(
+                    height: 60,
+                    width: double.infinity,
+                    child: ElevatedButton(
+                        onPressed: () {
+                          if (formKey.currentState!.validate()) {
+                            Map<String, dynamic> data = {
+                              "name": nameController.text,
+                              "old_price": int.parse(oldPriceController.text),
+                              "new_price": int.parse(newPriceController.text),
+                              "quantity": int.parse(quantityController.text),
+                              "category": categoryController.text,
+                              "desc": descController.text,
+                              "image": imageController.text
+                            };
 
-                if(productId.isNotEmpty){
-                  DbService().updateProduct(docId: productId, data: data);
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Product Updated")));
-                }
-                else{
-                  DbService().createProduct( data: data);
-                  Navigator.pop(context);
-                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("Product Added")));
-                }
-                    }
-                  }, child: Text(productId.isNotEmpty?"Update Product" : "Add Product")))
-                
+                            if (productId.isNotEmpty) {
+                              DbService()
+                                  .updateProduct(docId: productId, data: data);
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("Product Updated")));
+                            } else {
+                              DbService().createProduct(data: data);
+                              Navigator.pop(context);
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text("Product Added")));
+                            }
+                          }
+                        },
+                        child: Text(productId.isNotEmpty
+                            ? "Update Product"
+                            : "Add Product")))
               ],
             ),
           ),
