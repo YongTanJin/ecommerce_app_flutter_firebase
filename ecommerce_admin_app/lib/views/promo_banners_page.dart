@@ -40,7 +40,7 @@ class _PromoBannersPageState extends State<PromoBannersPage> {
       body:  _isInitialized? StreamBuilder(stream: DbService().readPromos(_isPromo), 
       builder: (context,snapshot){
         if(snapshot.hasData){
-            List<PromoBannersModel> promos = PromoBannersModel.fromJsonList(snapshot.data!.docs) as List<PromoBannersModel>;
+            List<PromoBannersModel> promos = PromoBannersModel.fromJsonList(snapshot.data!.docs);
             if(promos.isEmpty){
               return Center(child: Text("No ${_isPromo?"Promos":"Banners"} found"),);
             }
@@ -74,7 +74,7 @@ class _PromoBannersPageState extends State<PromoBannersPage> {
       );
                   
                 },
-                leading:  Container(
+                leading:  SizedBox(
                     height: 50,
                     width: 50,
                     child: Image.network(promos[index].image),

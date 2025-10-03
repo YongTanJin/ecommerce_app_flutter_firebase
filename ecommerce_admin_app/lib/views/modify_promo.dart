@@ -24,7 +24,7 @@ class _ModifyPromoState extends State<ModifyPromo> {
   TextEditingController categoryController = TextEditingController();
   TextEditingController imageController = TextEditingController();
   final ImagePicker picker = ImagePicker();
-  late XFile? image = null;
+  XFile? image;
 
   bool _isInitialized = false;
   bool _isPromo = true;
@@ -51,13 +51,11 @@ class _ModifyPromoState extends State<ModifyPromo> {
     if (image != null) {
       String? res = await uploadToCloudinary(image);
       setState(() {
-        if (res != null) {
-          imageController.text = res;
-          print("set image url ${res} : ${imageController.text}");
-          ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Image uploaded successfully")));
-        }
-      });
+        imageController.text = res ?? "";
+        print("set image url $res : ${imageController.text}");
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Image uploaded successfully")));
+            });
     }
   }
 
@@ -79,7 +77,7 @@ class _ModifyPromoState extends State<ModifyPromo> {
   // }
 
   // set the data from arguments
-  setData(PromoBannersModel data) {
+  void setData(PromoBannersModel data) {
     productId = data.id;
     titleController.text = data.title;
     categoryController.text = data.category;

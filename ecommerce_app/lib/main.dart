@@ -5,7 +5,6 @@ import 'package:ecommerce_app/providers/user_provider.dart';
 import 'package:ecommerce_app/views/cart_page.dart';
 import 'package:ecommerce_app/views/checkout_page.dart';
 import 'package:ecommerce_app/views/discount_page.dart';
-import 'package:ecommerce_app/views/home.dart';
 import 'package:ecommerce_app/views/home_nav.dart';
 import 'package:ecommerce_app/views/login.dart';
 import 'package:ecommerce_app/views/orders_page.dart';
@@ -71,18 +70,18 @@ class MyApp extends StatelessWidget {
           useMaterial3: true,
         ),
         routes: {
-          "/":(context)=> CheckUser(),
-          "/login": (context)=> LoginPage(),
-          "/home": (context)=> HomeNav(),
-          "/signup": (context)=> SingupPage(),
-          "/update_profile":(context)=> UpdateProfile(),
-          "/discount": (context)=> DiscountPage(),
-          "/specific": (context)=> SpecificProducts(),
-          "/view_product":(context)=> ViewProduct(),
-          "/cart": (context)=> CartPage(),
-          "/checkout":(context)=> CheckoutPage(),
-          "/orders":(context)=> OrdersPage(),
-          "/view_order":(context)=> ViewOrder(),
+          "/":(context)=> const CheckUser(),
+          "/login": (context)=> const LoginPage(),
+          "/home": (context)=> const HomeNav(),
+          "/signup": (context)=> const SingupPage(),
+          "/update_profile":(context)=> const UpdateProfile(),
+          "/discount": (context)=> const DiscountPage(),
+          "/specific": (context)=> const SpecificProducts(),
+          "/view_product":(context)=> const ViewProduct(),
+          "/cart": (context)=> const CartPage(),
+          "/checkout":(context)=> const CheckoutPage(),
+          "/orders":(context)=> const OrdersPage(),
+          "/view_order":(context)=> const ViewOrder(),
         },
        
       ),
@@ -114,6 +113,6 @@ class _CheckUserState extends State<CheckUser> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(body:  Center(child: CircularProgressIndicator(),),);
+    return const Scaffold(body:  Center(child: CircularProgressIndicator(),),);
   }
 }

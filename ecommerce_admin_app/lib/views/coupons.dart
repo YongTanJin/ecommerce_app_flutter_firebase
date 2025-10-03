@@ -22,8 +22,7 @@ class _CouponsPageState extends State<CouponsPage> {
         builder: (context, snapshot) {
           if (snapshot.hasData) {
             List<CouponModel> coupons =
-                CouponModel.fromJsonList(snapshot.data!.docs)
-                    as List<CouponModel>;
+                CouponModel.fromJsonList(snapshot.data!.docs);
 
             if (coupons.isEmpty) {
               return Center(

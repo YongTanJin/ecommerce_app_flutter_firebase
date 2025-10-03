@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:ecommerce_admin_app/containers/additional_confirm.dart';
 import 'package:ecommerce_admin_app/controllers/cloudinary_service.dart';
 import 'package:ecommerce_admin_app/controllers/db_service.dart';
-import 'package:ecommerce_admin_app/controllers/storage_service.dart';
 import 'package:ecommerce_admin_app/models/categories_model.dart';
 import 'package:ecommerce_admin_app/providers/admin_provider.dart';
 import 'package:flutter/material.dart';
@@ -39,11 +38,10 @@ class _CategoriesPageState extends State<CategoriesPage> {
             itemCount: value.categories.length,
             itemBuilder: (context, index) {
               return ListTile(
-                leading: Container(
+                leading: SizedBox(
                     height: 50,
                     width: 50,
-                    child: Image.network(categories[index].image == null ||
-                            categories[index].image == ""
+                    child: Image.network(categories[index].image == ""
                         ? "https://demofree.sirv.com/nope-not-here.jpg"
                         : categories[index].image)),
                 onTap: () {
@@ -151,7 +149,7 @@ class ModifyCategory extends StatefulWidget {
 class _ModifyCategoryState extends State<ModifyCategory> {
   final formKey = GlobalKey<FormState>();
   final ImagePicker picker = ImagePicker();
-  late XFile? image = null;
+  XFile? image;
   TextEditingController categoryController = TextEditingController();
   TextEditingController imageController = TextEditingController();
   TextEditingController priorityController = TextEditingController();
@@ -172,13 +170,11 @@ class _ModifyCategoryState extends State<ModifyCategory> {
     if (image != null) {
       String? res = await uploadToCloudinary(image);
       setState(() {
-        if (res != null) {
-          imageController.text = res;
-          print("set image url ${res} : ${imageController.text}");
-          ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Image uploaded successfully")));
-        }
-      });
+        imageController.text = res ?? "";
+        print("set image url $res : ${imageController.text}");
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Image uploaded successfully")));
+            });
     }
   }
 

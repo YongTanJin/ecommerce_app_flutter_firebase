@@ -27,7 +27,7 @@ class _ModifyProductState extends State<ModifyProduct> {
   TextEditingController descController = TextEditingController();
   TextEditingController imageController = TextEditingController();
   final ImagePicker picker = ImagePicker();
-  late XFile? image = null;
+  XFile? image;
 
 // NEW : upload to cloudinary
   void _pickImageAndCloudinaryUpload() async {
@@ -35,13 +35,11 @@ class _ModifyProductState extends State<ModifyProduct> {
     if (image != null) {
       String? res = await uploadToCloudinary(image);
       setState(() {
-        if (res != null) {
-          imageController.text = res;
-          print("set image url ${res} : ${imageController.text}");
-          ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text("Image uploaded successfully")));
-        }
-      });
+        imageController.text = res ?? "";
+        print("set image url $res : ${imageController.text}");
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Image uploaded successfully")));
+            });
     }
   }
 
@@ -63,7 +61,7 @@ class _ModifyProductState extends State<ModifyProduct> {
   // }
 
   // set the data from arguments
-  setData(ProductsModel data) {
+  void setData(ProductsModel data) {
     productId = data.id;
     nameController.text = data.name;
     oldPriceController.text = data.old_price.toString();

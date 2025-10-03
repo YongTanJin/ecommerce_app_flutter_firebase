@@ -18,7 +18,7 @@ class _ProductsPageState extends State<ProductsPage> {
     return Scaffold(
       appBar:  AppBar(title: Text("Products"),),
       body:  Consumer<AdminProvider>(builder: (context, value, child) {
-         List<ProductsModel> products = ProductsModel.fromJsonList(value.products) as List<ProductsModel>;
+         List<ProductsModel> products = ProductsModel.fromJsonList(value.products);
 
          if(products.isEmpty){
           return Center(child: Text("No Products Found"),);
@@ -50,7 +50,7 @@ class _ProductsPageState extends State<ProductsPage> {
                 ));
               },
               onTap: ()=> Navigator.pushNamed(context, "/view_product",arguments: products[index]),
-              leading:  Container(height: 50,width: 50,
+              leading:  SizedBox(height: 50,width: 50,
               child:  Image.network(products[index].image),),
               title:  Text(products[index].name, maxLines: 2, overflow: TextOverflow.ellipsis,),
               subtitle: Row(

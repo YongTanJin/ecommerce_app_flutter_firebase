@@ -112,22 +112,22 @@ SizedBox(
   height: 60,width: MediaQuery.of(context).size.width*.5,
   child: ElevatedButton(
                     onPressed: () {},
-                    child: Text("Add to Cart"),
                     style: ElevatedButton.styleFrom(
                         backgroundColor: Theme.of(context).primaryColor,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder()),
+                    child: Text("Add to Cart"),
                   ),
 ),
 SizedBox(
   height: 60,width: MediaQuery.of(context).size.width*.5,
   child: ElevatedButton(
                     onPressed: () {},
-                    child: Text("Buy Now"),
                     style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.white,
                         foregroundColor:  Theme.of(context).primaryColor,
                         shape: RoundedRectangleBorder()),
+                    child: Text("Buy Now"),
                   ),
 ),
       ],),
